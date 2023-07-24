@@ -18,7 +18,7 @@ body > div {
 	margin: auto;
 }
 .box {
-	display: none;
+	display: flex;
 	flex-direction: column;
 	width: 600px;
 	gap: 12px;
@@ -46,21 +46,7 @@ p {
 }
 </style>
 </head>
-<body><div>
-	<div id="login" class="box" style="width:300px;display:flex">
-		<input type="text" id="loginhandle" name="handle" placeholder="handle">
-		<input type="password" id="loginpassword" name="password" placeholder="password">
-		<button id="loginbutton">login</button>
-	</div>
-	<div id="postinput" class="box">
-		<input type="text" id="posturl" name="posturl" placeholder="post url">
-		<div class="row">
-			<button id="getrepostersbutton">get reposters</button>
-			<button id="getlikesbutton">get likers</button>
-		</div>
-	</div>
-	<div id="likers" class="box">
-	</div>
+<body><div id="maincontainer">
 <script type="text/javascript" src="out.js"></script>
 </div></body>
 </html>
