@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bblock</title>
+<style type="text/css">
+body {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	min-height: 60vh;
+	margin-top: 20vh;
+}
+body > div {
+	margin: auto;
+}
+.box {
+	display: none;
+	flex-direction: column;
+	width: 600px;
+	gap: 12px;
+}
+p {
+	margin: 0;
+}
+.row, .profile {
+	display: flex;
+	flex-direction: row;
+	gap: 8px;
+}
+.profile img {
+	width: 52px;
+	height: 52px;
+	border-radius: 100%;
+}
+.profile > div {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+.row > button {
+	flex-grow: 1;
+}
+</style>
+</head>
+<body><div>
+	<div id="login" class="box" style="width:300px;display:flex">
+		<input type="text" id="loginhandle" name="handle" placeholder="handle">
+		<input type="password" id="loginpassword" name="password" placeholder="password">
+		<button id="loginbutton">login</button>
+	</div>
+	<div id="postinput" class="box">
+		<input type="text" id="posturl" name="posturl" placeholder="post url">
+		<div class="row">
+			<button id="getrepostersbutton">get reposters</button>
+			<button id="getlikesbutton">get likers</button>
+		</div>
+	</div>
+	<div id="likers" class="box">
+	</div>
+<script type="text/javascript" src="out.js"></script>
+</div></body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@intrnl/bluesky-client": "^0.1.3",
+    "esbuild": "0.18.16",
+    "lit-html": "^2.7.5"
+  },
+  "scripts": {
+    "build": "esbuild app.js --bundle --minify --sourcemap --outfile=out.js"
+  }
+}
