@@ -90,6 +90,7 @@ async function getlikers(rpc, f) {
 		replaceActionRow(html`<div class="row">
 			<button @click=${muteall}>mute all</button>
 			<button @click=${blockall}>block all</button>
+			<button @click=${() => replaceMain(postInputBox)}>back</button>
 		</div>`);
 	}
 
@@ -128,6 +129,11 @@ async function getlikers(rpc, f) {
 		}
 	}
 
+	const doneRow = html`<div class="row">
+			${centerText("Done!")}
+			<button @click=${() => replaceMain(postInputBox)}>back</button>
+		</div>`;
+
 	async function blockall() {
 		let records = [];
 
@@ -151,7 +157,7 @@ async function getlikers(rpc, f) {
 
 		await createAll(records);
 
-		replaceActionRow(centerText("Done!"));
+		replaceActionRow(doneRow);
 	}
 
 	async function muteall() {
@@ -200,7 +206,7 @@ async function getlikers(rpc, f) {
 
 		await createAll(records);
 
-		replaceActionRow(centerText("Done!"));
+		replaceActionRow(doneRow);
 	}
 
 	const profile = actor => html`<div class="profile">
