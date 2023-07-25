@@ -3,8 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>bblock</title>
+<title>Blockenheimer</title>
 <style type="text/css">
+:root {
+	--fonts: "Inconsolata","Consolas",monospace;
+}
 body {
 	display: flex;
 	align-items: center;
@@ -13,6 +16,15 @@ body {
 	padding: 0;
 	min-height: 60vh;
 	margin-top: 20vh;
+
+	font-family: var(--fonts);
+}
+#title {
+	position: absolute;
+	top: 72px;
+	text-align: center;
+	width: 100%;
+	font-size: 72pt;
 }
 body > div {
 	margin: auto;
@@ -20,8 +32,8 @@ body > div {
 .box {
 	display: flex;
 	flex-direction: column;
-	width: 600px;
-	gap: 12px;
+	width: 50rem;
+	gap: 0.8rem;
 }
 p {
 	margin: 0;
@@ -29,7 +41,7 @@ p {
 .row, .profile {
 	display: flex;
 	flex-direction: row;
-	gap: 8px;
+	gap: 0.6rem;
 }
 .profile img {
 	width: 52px;
@@ -39,14 +51,27 @@ p {
 .profile > div {
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: 0.3rem;
+}
+.deselected {
+	background-color: #aaffaa;
 }
 .row > button {
 	flex-grow: 1;
 }
+button {
+	border: 0;
+	color: #fff;
+	background-color: #000;
+}
+button, input {
+	height: 2rem;
+	font-size: 1.4rem;
+	font-family: var(--fonts);
+}
 </style>
 </head>
-<body><div id="maincontainer">
+<body><div id="title">Blockenheimer</div><div id="maincontainer">
 <script type="text/javascript" src="out.js"></script>
 </div></body>
 </html>
