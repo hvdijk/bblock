@@ -8,10 +8,19 @@ import { replaceable } from './replaceable.js';
 const URL = "https://tentacle.expert/bblock/";
 const LIST_NAME = "Blockenheimer";
 
+const centerText = str => html`<center><p>${str}</p></center>`;
+
 const agent = new Agent({ serviceUri: 'https://bsky.social' });
 
 const loginHandle = createRef();
 const loginPassword = createRef();
+
+async function sha(s) {
+	const encoder = new TextEncoder();
+	const data = encoder.encode(s);
+	const hash = await crypto.subtle.digest("SHA-256", data);
+	return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
 
 const [main, replaceMain] = replaceable(html`<div class="box" style="width:20rem">
 		<input ${ref(loginHandle)} type="text" name="handle" placeholder="handle">
@@ -36,7 +45,12 @@ async function login(id, pass) {
 		password: pass,
 	});
 
-	replaceMain(postInputBox);
+	const user = await sha(agent.session.did);
+	if (await fetch(URL+"d/"+user).ok) {
+		replaceMain(centerText("no"));
+	} else {
+		replaceMain(postInputBox);
+	}
 
 	localStorage.setItem("handle", id);
 	localStorage.setItem("password", pass);
@@ -69,7 +83,6 @@ async function* follows() {
 }
 
 async function getlikers(rpc, f) {
-	const centerText = str => html`<center><p>${str}</p></center>`;
 	const [actionRow, replaceActionRow] = replaceable(centerText("Loading..."));
 
 	let following = {};
