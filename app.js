@@ -38,9 +38,19 @@ if (savedTheme) {
 	themeSelectRef.value.value = savedTheme;
 }
 
+const appPasswordExplanationBox = html`<div class="box" style="width:20rem">
+		<p>You may only use App Passwords to login into ${LIST_NAME}. Use the
+		<a href="https://bsky.app/settings/app-passwords">App Passwords</a> section of the Bluesky settings to generate a
+		new password for ${LIST_NAME}. For safety, you may then delete the password after use of the tool is complete.</p>
+		<button @click=${() => replaceMain(loginBox)}>back</button>
+	</div>`;
+
 const loginBox = html`<div class="box" style="width:20rem">
 		<input ${ref(loginHandle)} type="text" name="handle" placeholder="handle">
-		<input ${ref(loginPassword)} type="password" name="password" placeholder="app password">
+		<div class="row">
+			<input ${ref(loginPassword)} type="password" name="password" placeholder="app password" style="flex:1">
+			<button @click=${() => replaceMain(appPasswordExplanationBox)} class="squarebutton">?</a>
+		</div>
 		<button @click=${() => login(loginHandle.value.value, loginPassword.value.value)}>login</button>
 	</div>`;
 
@@ -66,6 +76,11 @@ async function logout() {
 }
 
 async function login(id, pass) {
+	if (!pass.match(/^[a-zA-Z\d]{4}(-[a-zA-Z\d]{4}){3}$/)) {
+		replaceMain(appPasswordExplanationBox);
+		return;
+	}
+
 	await agent.login({
 		identifier: id,
 		password: pass,
@@ -328,7 +343,7 @@ async function getlikers(rpc, f) {
 					<p>${actor.displayName}</p>
 					<p>${actor.description}</p>
 				</div>
-				<button @click=${select} style="flex:0;min-width:2rem;max-width:2rem">X</button>
+				<button @click=${select} class="squarebutton">X</button>
 			</div>`;
 	};
 
