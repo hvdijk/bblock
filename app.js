@@ -38,12 +38,14 @@ if (savedTheme) {
 	themeSelectRef.value.value = savedTheme;
 }
 
-// main (starts with login)
-const [main, replaceMain] = replaceable(html`<div class="box" style="width:20rem">
+const loginBox = html`<div class="box" style="width:20rem">
 		<input ${ref(loginHandle)} type="text" name="handle" placeholder="handle">
 		<input ${ref(loginPassword)} type="password" name="password" placeholder="app password">
 		<button @click=${() => login(loginHandle.value.value, loginPassword.value.value)}>login</button>
-	</div>`);
+	</div>`;
+
+// main (starts with login)
+const [main, replaceMain] = replaceable(loginBox);
 
 render(html`${main}`, document.getElementById("maincontainer"));
 
@@ -60,6 +62,7 @@ const postInputBox = html`<div class="box">
 async function logout() {
 	localStorage.removeItem("handle");
 	localStorage.removeItem("password");
+	replaceMain(loginBox);
 }
 
 async function login(id, pass) {
