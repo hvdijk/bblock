@@ -103,14 +103,17 @@ async function sha(s) {
 	return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+let following;
 async function getlikers(rpc, f) {
 	const [actionRow, replaceActionRow] = replaceable(centerText("Loading..."));
 
-	let following = {};
-	for await (const x of follows()) {
-        following[x.value.subject] = true;
-    }
-    following[agent.session.did] = true;
+	if (following === undefined) {
+		following = {};
+		for await (const x of follows()) {
+	        following[x.value.subject] = true;
+	    }
+	    following[agent.session.did] = true;
+	}
 
 	let profileRefs = [];
 	let likers = [];
@@ -217,7 +220,7 @@ async function getlikers(rpc, f) {
 		const createdAt = (new Date()).toISOString();
 		const itemType = 'app.bsky.graph.block';
 
-		likers.forEach(actor => {
+		likers.filter((_,i) => !deselected[i]).forEach(actor => {
 			if (!actor.viewer.blocking) {
 				records.push({
 					collection: itemType,
