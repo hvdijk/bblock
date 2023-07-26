@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Blockenheimer</title>
+<link href="themes/light.css" rel="stylesheet" />
 <style type="text/css">
 :root {
 	--fonts: "Inconsolata","Consolas",monospace;
@@ -25,6 +26,12 @@ body {
 	text-align: center;
 	width: 100%;
 	font-size: 72pt;
+}
+#title .pill {
+	font-size: 48pt;
+	border-radius: 1rem;
+	margin-left: 0.8rem;
+	padding: 0 0.6rem;
 }
 body > div {
 	margin: auto;
@@ -53,25 +60,21 @@ p {
 	flex-direction: column;
 	gap: 0.3rem;
 }
-.deselected {
-	background-color: #aaffaa;
-}
 .row > button {
 	flex-grow: 1;
 }
-button {
-	border: 0;
-	color: #fff;
-	background-color: #000;
-}
-button, input {
-	height: 2rem;
-	font-size: 1.4rem;
-	font-family: var(--fonts);
+#themeselectbox {
+	position: fixed;
+	top: 1rem;
+	left: 1rem;
 }
 </style>
 </head>
-<body><div id="title">Blockenheimer</div><div id="maincontainer">
+<body>
+<div id="themeselectbox"></div>
+<div id="title">Blockenheimer<span class="pill">BETA</span></div>
+<div id="maincontainer">
 <script type="text/javascript" src="out.js"></script>
-</div></body>
+</div>
+</body>
 </html>

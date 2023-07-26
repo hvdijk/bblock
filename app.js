@@ -5,7 +5,7 @@ import { when } from 'lit-html/directives/when.js';
 import { ref, createRef } from 'lit-html/directives/ref.js';
 import { replaceable } from './replaceable.js';
 
-const URL = "https://tentacle.expert/bblock/";
+const URL = "https://blockenheimer.click/";
 const LIST_NAME = "Blockenheimer";
 
 const centerText = str => html`<center><p>${str}</p></center>`;
@@ -15,13 +15,27 @@ const agent = new Agent({ serviceUri: 'https://bsky.social' });
 const loginHandle = createRef();
 const loginPassword = createRef();
 
-async function sha(s) {
-	const encoder = new TextEncoder();
-	const data = encoder.encode(s);
-	const hash = await crypto.subtle.digest("SHA-256", data);
-	return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, "0")).join("");
+// theme selection
+const themeLink = document.getElementsByTagName("link")[0];
+const themeSelectRef = createRef();
+render(html`Theme: <select ${ref(themeSelectRef)} @change=${e => themeChange(e.target.value)}>
+		<option value="light">Light</option>
+		<option value="dark">Dark</option>
+		<option value="dred">Dark red</option>
+	</select>`, document.getElementById("themeselectbox"))
+
+function themeChange(theme) {
+	themeLink.attributes["href"].value = "themes/"+theme+".css";
+	localStorage.setItem("theme", theme);
 }
 
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme) {
+	themeChange(savedTheme);
+	themeSelectRef.value.value = savedTheme;
+}
+
+// main (starts with login)
 const [main, replaceMain] = replaceable(html`<div class="box" style="width:20rem">
 		<input ${ref(loginHandle)} type="text" name="handle" placeholder="handle">
 		<input ${ref(loginPassword)} type="password" name="password" placeholder="app password">
@@ -82,6 +96,13 @@ async function* follows() {
 	}
 }
 
+async function sha(s) {
+	const encoder = new TextEncoder();
+	const data = encoder.encode(s);
+	const hash = await crypto.subtle.digest("SHA-256", data);
+	return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 async function getlikers(rpc, f) {
 	const [actionRow, replaceActionRow] = replaceable(centerText("Loading..."));
 
@@ -90,13 +111,20 @@ async function getlikers(rpc, f) {
         following[x.value.subject] = true;
     }
     following[agent.session.did] = true;
-    console.log(following);
 
 	let profileRefs = [];
 	let likers = [];
 	let deselected = {};
 
-	const g = postInput.value.value.match(/https:\/\/bsky\.app\/profile\/(.+?)\/post\/(.+)/);
+	const g = postInput.value.value.match(/^https:\/\/bsky\.app\/profile\/(.+?)\/post\/([^/]+)/);
+
+	if (!g || g.length < 3) {
+		replaceMain(html`<div class="box">
+				${centerText("Invalid Bluesky post URL")}
+				<button @click=${() => replaceMain(postInputBox)}>back</button>
+			</div>`);
+		return;
+	}
 
 	let did = g[1];
 	if (!g[1].startsWith("did:plc:")) {
@@ -122,14 +150,12 @@ async function getlikers(rpc, f) {
 	async function* pages() {
 		let res = await fetchPage();
 		let page = f(res.data);
-		console.log(res);
 
 		yield* page;
 
 		while (res.data.cursor && page.length >= PAGE_LIMIT) {
 			res = await fetchPage(res.data.cursor);
 			page = f(res.data);
-			console.log(res);
 
 			yield* page;
 		}
@@ -192,14 +218,16 @@ async function getlikers(rpc, f) {
 		const itemType = 'app.bsky.graph.block';
 
 		likers.forEach(actor => {
-			records.push({
-				collection: itemType,
-				value: {
-					'$type': itemType,
-					subject: actor.did,
-					createdAt
-				}
-			});
+			if (!actor.viewer.blocking) {
+				records.push({
+					collection: itemType,
+					value: {
+						'$type': itemType,
+						subject: actor.did,
+						createdAt
+					}
+				});
+			}
 		});
 
 		replaceActionRow(centerText("Creating blocks..."));
@@ -261,7 +289,7 @@ async function getlikers(rpc, f) {
 		const listBsky = `https://bsky.app/profile/${repo}/lists/${listRkey}`;
 		replaceActionRow(html`<div class="box">${doneRow}
 				<p>Users were added to the <a href=${listBsky}>${LIST_NAME}</a> mute list.
-				${when(listExists, () => html``, () => html`It was automatically created for use by this tool. You may change its name, avatar, and description.`)}
+				${when(listExists, () => html``, () => html`It was automatically created for use by this tool. You may change its name and avatar.`)}
 				You must subscribe to this list for the mutes to enter into effect.</p>
 			</div>`);
 	}

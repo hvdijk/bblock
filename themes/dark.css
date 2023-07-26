@@ -1,0 +1,24 @@
+body {
+	color: #fff;
+	background-color: #000;
+}
+.deselected {
+	background-color: #00aa00;
+}
+button {
+	border: 0;
+	color: #000;
+	background-color: #fff;
+}
+button, input {
+	height: 2rem;
+	font-size: 1.4rem;
+	font-family: var(--fonts);
+}
+input[type=text], input[type=password] {
+	color: #fff;
+	background-color: #000;
+}
+#title .pill {
+	background-color: #444444;
+}
