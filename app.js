@@ -25,7 +25,7 @@ render(html`Theme: <select ${ref(themeSelectRef)} @change=${e => themeChange(e.t
 		<option value="barbie">Barbie</option>
 		<option value="dark">Dark</option>
 		<option value="dred">Dark red</option>
-	</select>`, document.getElementById("themeselectbox"))
+	</select><br><a href="https://codeberg.org/xormetric/bblock/">Source code</a>`, document.getElementById("themeselectbox"))
 
 function themeChange(theme) {
 	themeLink.attributes["href"].value = "themes/"+theme+".css";
