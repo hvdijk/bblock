@@ -20,6 +20,7 @@ const themeLink = document.getElementsByTagName("link")[0];
 const themeSelectRef = createRef();
 render(html`Theme: <select ${ref(themeSelectRef)} @change=${e => themeChange(e.target.value)}>
 		<option value="light">Light</option>
+		<option value="barbie">Barbie</option>
 		<option value="dark">Dark</option>
 		<option value="dred">Dark red</option>
 	</select>`, document.getElementById("themeselectbox"))
@@ -52,6 +53,11 @@ const postInputBox = html`<div class="box">
 			<button @click=${() => getlikers('app.bsky.feed.getLikes', x => x.likes.map(l => l.actor))}>get likers</button>
 		</div>
 	</div>`;
+
+async function logout() {
+	localStorage.removeItem("handle");
+	localStorage.removeItem("password");
+}
 
 async function login(id, pass) {
 	await agent.login({
