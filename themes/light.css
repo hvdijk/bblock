@@ -1,6 +1,9 @@
 .deselected {
 	background-color: #aaffaa;
 }
+a {
+	color: #000;
+}
 button {
 	border: 0;
 	color: #fff;

@@ -2,6 +2,9 @@ body {
 	color: #fff;
 	background-color: #e94196;
 }
+a {
+	color: #fff;
+}
 .deselected {
 	background-color: rgba(0, 255, 0, 0.75);
 }

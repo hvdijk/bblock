@@ -2,6 +2,9 @@ body {
 	background-color: #000000;
 	color: #ff0000;
 }
+a {
+	color: #ff0000;
+}
 .deselected {
 	background-color: #440000;
 }
