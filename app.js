@@ -1,8 +1,10 @@
+import { html, render } from 'https://esm.run/lit-html';
+import { asyncAppend } from 'https://esm.run/lit-html/directives/async-append.js';
+import { when } from 'https://esm.run/lit-html/directives/when.js';
+import { ref, createRef } from 'https://esm.run/lit-html/directives/ref.js';
+
 import { Agent } from '@intrnl/bluesky-client/agent';
-import { html, render } from 'lit-html';
-import { asyncAppend } from 'lit-html/directives/async-append.js';
-import { when } from 'lit-html/directives/when.js';
-import { ref, createRef } from 'lit-html/directives/ref.js';
+
 import { replaceable } from './replaceable.js';
 
 const URL = "https://blockenheimer.click/";
@@ -52,6 +54,7 @@ const postInputBox = html`<div class="box">
 			<button @click=${() => getlikers('app.bsky.feed.getRepostedBy', x => x.repostedBy)}>get reposters</button>
 			<button @click=${() => getlikers('app.bsky.feed.getLikes', x => x.likes.map(l => l.actor))}>get likers</button>
 		</div>
+		<button @click=${() => logout()}>logout</button>
 	</div>`;
 
 async function logout() {
@@ -296,9 +299,10 @@ async function getlikers(rpc, f) {
 		await new Promise(r => setTimeout(r, 100));
 
 		const listBsky = `https://bsky.app/profile/${repo}/lists/${listRkey}`;
+		const createdMessage = when(listExists, () => html``, () => html`It was automatically created for use by this tool. You may change its name and avatar.`);
 		replaceActionRow(html`<div class="box">${doneRow}
 				<p>Users were added to the <a href=${listBsky}>${LIST_NAME}</a> mute list.
-				${when(listExists, () => html``, () => html`It was automatically created for use by this tool. You may change its name and avatar.`)}
+				${createdMessage}
 				You must subscribe to this list for the mutes to enter into effect.</p>
 			</div>`);
 	}

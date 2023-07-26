@@ -1,4 +1,4 @@
-import { asyncReplace } from 'lit-html/directives/async-replace.js';
+import { asyncReplace } from 'https://esm.run/lit-html/directives/async-replace.js';
 
 export function replaceable(first) {
 	let f;
