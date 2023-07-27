@@ -1,11 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Blockenheimer</title>
-<link href="themes/light.css" rel="stylesheet" />
-<style type="text/css">
 :root {
 	--fonts: "Inconsolata","Consolas",monospace;
 }
@@ -82,13 +74,3 @@ p {
 	min-width: 2rem;
 	max-width: 2rem;
 }
-</style>
-</head>
-<body>
-<div id="themeselectbox"></div>
-<div id="title">Blockenheimer<span class="pill">BETA</span></div>
-<div id="maincontainer">
-<script src="out.js" type="module"></script>
-</div>
-</body>
-</html>

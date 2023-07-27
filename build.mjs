@@ -15,12 +15,25 @@ const litHtmlTrimLeadingWhitespace = {
 	}
 };
 
-console.log(await esbuild.build({
-	entryPoints: [ 'app.js' ],
-	outfile: 'out.js',
-	platform: 'browser',
-	format: 'esm',
-	bundle: true,
-	minify: false,
-	plugins: [ litHtmlTrimLeadingWhitespace ],
-}));
+await fs.rm('dist', { recursive: true, force: true })
+
+await fs.cp('themes', 'dist/themes', { recursive: true });
+
+const apps = ['index'];
+if (await fs.access('src/admin.html').then(() => true).catch(() => false)) apps.push('admin');
+
+for (const app of apps) {
+	console.log(app);
+
+	await fs.cp('src/'+app+'.html', 'dist/'+app+'.html');
+
+	console.log(await esbuild.build({
+		entryPoints: [ 'src/'+app+'.js' ],
+		outfile: 'dist/'+app+'.js',
+		platform: 'browser',
+		format: 'esm',
+		bundle: true,
+		minify: false,
+		plugins: [ litHtmlTrimLeadingWhitespace ],
+	}));
+}

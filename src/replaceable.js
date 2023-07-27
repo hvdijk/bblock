@@ -1,17 +1,20 @@
 import { asyncReplace } from 'https://esm.run/lit-html/directives/async-replace.js';
 
 export function replaceable(first) {
-	let f;
+	let f = (v) => { first = v; };
 
 	async function* generator() {
-		yield first;
-
 		while (true) {
+			if (first !== undefined) {
+				yield first;
+				first = undefined;
+			}
+
 			yield await new Promise(r => {
-				f = v => r(v);
+				f = (v) => r(v);
 			});
 		}
 	}
 
-	return [asyncReplace(generator()), v => f(v)]
+	return [asyncReplace(generator()), (v) => f(v)]
 }

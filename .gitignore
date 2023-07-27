@@ -1,7 +1,5 @@
-d
-out.js
-out.js.map
+dist
 package-lock.json
 node_modules
 deploy.ps1
-*.gz
+admin*

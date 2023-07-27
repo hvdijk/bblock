@@ -1,63 +1,9 @@
-import { html, render } from 'https://esm.run/lit-html';
-import { asyncAppend } from 'https://esm.run/lit-html/directives/async-append.js';
 import { when } from 'https://esm.run/lit-html/directives/when.js';
+import { asyncAppend } from 'https://esm.run/lit-html/directives/async-append.js';
 import { ref, createRef } from 'https://esm.run/lit-html/directives/ref.js';
 
-import { Agent } from '@intrnl/bluesky-client/agent';
-
 import { replaceable } from './replaceable.js';
-
-const URL = "https://blockenheimer.click/";
-const LIST_NAME = "Blockenheimer";
-
-const centerText = str => html`<center><p>${str}</p></center>`;
-
-const agent = new Agent({ serviceUri: 'https://bsky.social' });
-
-const loginHandle = createRef();
-const loginPassword = createRef();
-
-// theme selection
-const themeLink = document.getElementsByTagName("link")[0];
-const themeSelectRef = createRef();
-render(html`Theme: <select ${ref(themeSelectRef)} @change=${e => themeChange(e.target.value)}>
-		<option value="light">Light</option>
-		<option value="barbie">Barbie</option>
-		<option value="dark">Dark</option>
-		<option value="dred">Dark red</option>
-	</select><br><a href="https://codeberg.org/xormetric/bblock/">Source code</a>`, document.getElementById("themeselectbox"))
-
-function themeChange(theme) {
-	themeLink.attributes["href"].value = "themes/"+theme+".css";
-	localStorage.setItem("theme", theme);
-}
-
-const savedTheme = localStorage.getItem("theme");
-if (savedTheme) {
-	themeChange(savedTheme);
-	themeSelectRef.value.value = savedTheme;
-}
-
-const appPasswordExplanationBox = html`<div class="box" style="width:20rem">
-		<p>You may only use App Passwords to login into ${LIST_NAME}. Use the
-		<a href="https://bsky.app/settings/app-passwords">App Passwords</a> section of the Bluesky settings to generate a
-		new password for ${LIST_NAME}. For safety, you may then delete the password after use of the tool is complete.</p>
-		<button @click=${() => replaceMain(loginBox)}>back</button>
-	</div>`;
-
-const loginBox = html`<div class="box" style="width:20rem">
-		<input ${ref(loginHandle)} type="text" name="handle" placeholder="handle">
-		<div class="row">
-			<input ${ref(loginPassword)} type="password" name="password" placeholder="app password" style="flex:1">
-			<button @click=${() => replaceMain(appPasswordExplanationBox)} class="squarebutton">?</a>
-		</div>
-		<button @click=${() => login(loginHandle.value.value, loginPassword.value.value)}>login</button>
-	</div>`;
-
-// main (starts with login)
-const [main, replaceMain] = replaceable(loginBox);
-
-render(html`${main}`, document.getElementById("maincontainer"));
+import { html, URL, LIST_NAME, centerText, agent, startApp, logout } from './app.js';
 
 const postInput = createRef();
 const postInputBox = html`<div class="box">
@@ -66,40 +12,10 @@ const postInputBox = html`<div class="box">
 			<button @click=${() => getlikers('app.bsky.feed.getRepostedBy', x => x.repostedBy)}>get reposters</button>
 			<button @click=${() => getlikers('app.bsky.feed.getLikes', x => x.likes.map(l => l.actor))}>get likers</button>
 		</div>
-		<button @click=${() => logout()}>logout</button>
+		<button @click=${() => logout(() => replaceMain(loginBox))}>logout</button>
 	</div>`;
 
-async function logout() {
-	localStorage.removeItem("handle");
-	localStorage.removeItem("password");
-	replaceMain(loginBox);
-}
-
-async function login(id, pass) {
-	if (!pass.match(/^[a-zA-Z\d]{4}(-[a-zA-Z\d]{4}){3}$/)) {
-		replaceMain(appPasswordExplanationBox);
-		return;
-	}
-
-	await agent.login({
-		identifier: id,
-		password: pass,
-	});
-
-	const user = await sha(agent.session.did);
-	if (await fetch(URL+"d/"+user).ok) {
-		replaceMain(centerText("no"));
-	} else {
-		replaceMain(postInputBox);
-	}
-
-	localStorage.setItem("handle", id);
-	localStorage.setItem("password", pass);
-}
-
-if (localStorage.getItem("password")) {
-	login(localStorage.getItem("handle"), localStorage.getItem("password"));
-}
+var { loginBox, replaceMain } = startApp(postInputBox);
 
 async function* follows() {
 	const PAGE_LIMIT = 100;
@@ -121,13 +37,6 @@ async function* follows() {
 		res = await fetchPage(res.data.cursor);
 		yield* res.data.records;
 	}
-}
-
-async function sha(s) {
-	const encoder = new TextEncoder();
-	const data = encoder.encode(s);
-	const hash = await crypto.subtle.digest("SHA-256", data);
-	return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 let following;
@@ -157,7 +66,7 @@ async function getlikers(rpc, f) {
 	}
 
 	let did = g[1];
-	if (!g[1].startsWith("did:plc:")) {
+	if (!g[1].startsWith("did:")) {
 		const res = await agent.rpc.get('com.atproto.identity.resolveHandle', {
 			params: {
 				handle: g[1]
