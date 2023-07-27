@@ -2,7 +2,7 @@ import { when } from 'https://esm.run/lit-html/directives/when.js';
 import { asyncAppend } from 'https://esm.run/lit-html/directives/async-append.js';
 import { ref, createRef } from 'https://esm.run/lit-html/directives/ref.js';
 
-import { replaceable } from './replaceable.js';
+import { createReplaceable, replaceable } from './replaceable.js';
 import { html, URL, LIST_NAME, centerText, agent, startApp, logout } from './app.js';
 
 const postInput = createRef();
@@ -12,10 +12,10 @@ const postInputBox = html`<div class="box">
 			<button @click=${() => getlikers('app.bsky.feed.getRepostedBy', x => x.repostedBy)}>get reposters</button>
 			<button @click=${() => getlikers('app.bsky.feed.getLikes', x => x.likes.map(l => l.actor))}>get likers</button>
 		</div>
-		<button @click=${() => logout(() => replaceMain(loginBox))}>logout</button>
+		<button @click=${() => logout(() => main.replace(loginBox))}>logout</button>
 	</div>`;
 
-var { loginBox, replaceMain } = startApp(postInputBox);
+var { loginBox, main } = startApp(postInputBox);
 
 async function* follows() {
 	const PAGE_LIMIT = 100;
@@ -41,7 +41,7 @@ async function* follows() {
 
 let following;
 async function getlikers(rpc, f) {
-	const [actionRow, replaceActionRow] = replaceable(centerText("Loading..."));
+	const actionRow = createReplaceable(centerText("Loading..."));
 
 	if (following === undefined) {
 		following = {};
@@ -58,9 +58,9 @@ async function getlikers(rpc, f) {
 	const g = postInput.value.value.match(/^https:\/\/bsky\.app\/profile\/(.+?)\/post\/([^/]+)/);
 
 	if (!g || g.length < 3) {
-		replaceMain(html`<div class="box">
+		main.replace(html`<div class="box">
 				${centerText("Invalid Bluesky post URL")}
-				<button @click=${() => replaceMain(postInputBox)}>back</button>
+				<button @click=${() => main.replace(postInputBox)}>back</button>
 			</div>`);
 		return;
 	}
@@ -99,11 +99,11 @@ async function getlikers(rpc, f) {
 			yield* page;
 		}
 
-		replaceActionRow(html`<div class="row">
-			<button @click=${muteall} style="flex:2">mute all</button>
-			<button @click=${blockall} style="flex:1">block all</button>
-			<button @click=${() => replaceMain(postInputBox)} style="flex:1">back</button>
-		</div>`);
+		actionRow.replace(html`<div class="row">
+				<button @click=${muteall} style="flex:2">mute all</button>
+				<button @click=${blockall} style="flex:1">block all</button>
+				<button @click=${() => main.replace(postInputBox)} style="flex:1">back</button>
+			</div>`);
 	}
 
 	async function* withCopyTo(arr, gen) {
@@ -145,13 +145,13 @@ async function getlikers(rpc, f) {
 
 	const doneRow = html`<div class="row">
 			${centerText("Done!")}
-			<button @click=${() => replaceMain(postInputBox)}>back</button>
+			<button @click=${() => main.replace(postInputBox)}>back</button>
 		</div>`;
 
 	async function blockall() {
 		let records = [];
 
-		replaceActionRow(centerText("Processing..."));
+		actionRow.replace(centerText("Processing..."));
 
 		const createdAt = (new Date()).toISOString();
 		const itemType = 'app.bsky.graph.block';
@@ -169,18 +169,18 @@ async function getlikers(rpc, f) {
 			}
 		});
 
-		replaceActionRow(centerText("Creating blocks..."));
+		actionRow.replace(centerText("Creating blocks..."));
 
 		await createAll(records);
 
-		replaceActionRow(doneRow);
+		actionRow.replace(doneRow);
 	}
 
 	async function muteall() {
 		const repo = agent.session.did;
 		let records = [];
 
-		replaceActionRow(centerText("Processing..."));
+		actionRow.replace(centerText("Processing..."));
 
 		const createdAt = (new Date()).toISOString();
 
@@ -219,7 +219,7 @@ async function getlikers(rpc, f) {
 			}
 		});
 
-		replaceActionRow(centerText("Creating mutes..."));
+		actionRow.replace(centerText("Creating mutes..."));
 
 		await createAll(records);
 
@@ -227,7 +227,7 @@ async function getlikers(rpc, f) {
 
 		const listBsky = `https://bsky.app/profile/${repo}/lists/${listRkey}`;
 		const createdMessage = when(listExists, () => html``, () => html`It was automatically created for use by this tool. You may change its name and avatar.`);
-		replaceActionRow(html`<div class="box">${doneRow}
+		actionRow.replace(html`<div class="box">${doneRow}
 				<p>Users were added to the <a href=${listBsky}>${LIST_NAME}</a> mute list.
 				${createdMessage}
 				You must subscribe to this list for the mutes to enter into effect.</p>
@@ -256,8 +256,8 @@ async function getlikers(rpc, f) {
 			</div>`;
 	};
 
-	replaceMain(html`<div class="box" style="display:flex">
-			${actionRow}
+	main.replace(html`<div class="box" style="display:flex">
+			${replaceable(actionRow)}
 			${asyncAppend(withCopyTo(likers, pages), profile)}
 		</div>`);
 }

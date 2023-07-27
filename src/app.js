@@ -3,7 +3,7 @@ import { ref, createRef } from 'https://esm.run/lit-html/directives/ref.js';
 
 import { Agent } from '@intrnl/bluesky-client/agent';
 
-import { replaceable } from './replaceable.js';
+import { createReplaceable, replaceable } from './replaceable.js';
 
 export { html, render };
 
@@ -36,9 +36,9 @@ if (savedTheme) {
 }
 
 export function startApp(appBox) {
-	const [main, replaceMain] = replaceable(html``);
+	const main = createReplaceable(html``);
 
-	const goApp = () => replaceMain(appBox);
+	const goApp = () => main.replace(appBox);
 
 	const loginHandle = createRef();
 	const loginPassword = createRef();
@@ -47,24 +47,24 @@ export function startApp(appBox) {
 			<p>You may only use App Passwords to login into ${LIST_NAME}. Use the
 			<a href="https://bsky.app/settings/app-passwords">App Passwords</a> section of the Bluesky settings to generate a
 			new password for ${LIST_NAME}. For safety, you may then delete the password after use of the tool is complete.</p>
-			<button @click=${() => replaceMain(loginBox)}>back</button>
+			<button @click=${() => main.replace(loginBox)}>back</button>
 		</div>`;
 
-	const goNotAppPassword = () => replaceMain(appPasswordExplanationBox);
-	const goError = () => replaceMain(centerText("oopsie whoopsie we did a wittle fucky wucky sowwy"));
+	const goNotAppPassword = () => main.replace(appPasswordExplanationBox);
+	const goError = () => main.replace(centerText("oopsie whoopsie we did a wittle fucky wucky sowwy"));
 
 	var loginBox = html`<div class="box" style="width:20rem">
 			<input ${ref(loginHandle)} type="text" name="handle" placeholder="handle">
 			<div class="row">
 				<input ${ref(loginPassword)} type="password" name="password" placeholder="app password" style="flex:1">
-				<button @click=${() => replaceMain(appPasswordExplanationBox)} class="squarebutton">?</a>
+				<button @click=${() => main.replace(appPasswordExplanationBox)} class="squarebutton">?</a>
 			</div>
 			<button @click=${() => login(loginHandle.value.value, loginPassword.value.value, goNotAppPassword, goError, goApp)}>login</button>
 		</div>`;
 
-	render(html`${main}`, document.getElementById("maincontainer"));
+	render(html`${replaceable(main)}`, document.getElementById("maincontainer"));
 
-	replaceMain(loginBox);
+	main.replace(loginBox);
 
 	if (localStorage.getItem("password")) {
 		login(localStorage.getItem("handle"), localStorage.getItem("password"), goNotAppPassword, goError, goApp);
@@ -73,7 +73,7 @@ export function startApp(appBox) {
 	return {
 		loginBox,
 		appPasswordExplanationBox,
-		replaceMain
+		main
 	};
 }
 
