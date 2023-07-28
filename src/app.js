@@ -90,7 +90,7 @@ async function login(id, pass, goNotAppPassword, goError, goApp) {
 	}
 
 	await agent.login({
-		identifier: id,
+		identifier: id.replace(/^@/, ""),
 		password: pass,
 	});
 

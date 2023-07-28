@@ -1,10 +1,11 @@
 import { promises as fs } from 'fs';
+import { dirname, resolve } from 'path';
 import * as esbuild from 'esbuild';
 
 const litHtmlTrimLeadingWhitespace = {
 	name: 'lit-html-trim-leading-whitespace',
 	setup(build) {
-		build.onLoad({ filter: /app\.js/ }, async ({ path }) => {
+		build.onLoad({ filter: /.*\.js/ }, async ({ path }) => {
 			return {
 				contents: (await fs.readFile(path, "utf8"))
 					.replaceAll(/html`[\s\S]+?`/g, match => {
@@ -14,6 +15,27 @@ const litHtmlTrimLeadingWhitespace = {
 		})
 	}
 };
+
+let htmlFiles = {};
+async function htmlJoiner(path) {
+	if (htmlFiles[path]) return htmlFiles[path];
+
+	const dir = dirname(path);
+	const content = await fs.readFile(path, "utf8");
+
+	let arr = [];
+	for (const part of content.split(/<!-- (join:\S+?) -->/g)) {
+		if (part.startsWith("join:")) {
+			arr.push(await htmlJoiner(resolve(dir, part.replace(/^join:/, "") + ".html")));
+		} else {
+			arr.push(part);
+		}
+	}
+
+	const joined = arr.join("");
+	htmlFiles[path] = joined;
+	return joined;
+}
 
 await fs.rm('dist', { recursive: true, force: true })
 
@@ -25,7 +47,7 @@ if (await fs.access('src/admin.html').then(() => true).catch(() => false)) apps.
 for (const app of apps) {
 	console.log(app);
 
-	await fs.cp('src/'+app+'.html', 'dist/'+app+'.html');
+	await fs.writeFile('dist/'+app+'.html', await htmlJoiner(resolve('src/'+app+'.html')));
 
 	console.log(await esbuild.build({
 		entryPoints: [ 'src/'+app+'.js' ],
