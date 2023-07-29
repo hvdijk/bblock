@@ -41,7 +41,7 @@ await fs.rm('dist', { recursive: true, force: true })
 
 await fs.cp('themes', 'dist/themes', { recursive: true });
 
-const apps = ['index', 'unblocker'];
+const apps = ['index', 'unblocker', 'history'];
 if (await fs.access('src/admin.html').then(() => true).catch(() => false)) apps.push('admin');
 
 for (const app of apps) {

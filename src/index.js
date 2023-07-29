@@ -2,8 +2,12 @@ import { when } from 'https://esm.run/lit-html/directives/when.js';
 import { asyncAppend } from 'https://esm.run/lit-html/directives/async-append.js';
 import { ref, createRef } from 'https://esm.run/lit-html/directives/ref.js';
 
+import * as history from './historyStorage.js';
 import { createReplaceable, replaceable } from './replaceable.js';
-import { html, URL, LIST_NAME, centerText, agent, startApp, logout } from './app.js';
+import { URL, LIST_NAME, agent, listRecords, blockNSID, listItemNSID } from './common.js';
+import { html, centerText, startApp, logout } from './app.js';
+
+let targetUrl;
 
 const postInput = createRef();
 const postInputBox = html`<div class="box">
@@ -16,28 +20,6 @@ const postInputBox = html`<div class="box">
 	</div>`;
 
 var { loginBox, main } = startApp(postInputBox);
-
-async function* follows() {
-	const PAGE_LIMIT = 100;
-	async function fetchPage(cursor) {
-		return await agent.rpc.get('com.atproto.repo.listRecords', {
-			params: {
-				repo: agent.session.did,
-				collection: 'app.bsky.graph.follow',
-				limit: PAGE_LIMIT,
-				cursor: cursor,
-			},
-		});
-	}
-
-	let res = await fetchPage();
-	yield* res.data.records;
-
-	while (res.data.cursor && res.data.records.length >= PAGE_LIMIT) {
-		res = await fetchPage(res.data.cursor);
-		yield* res.data.records;
-	}
-}
 
 async function createAll(records) {
 	if (records.length === 0) return;
@@ -80,19 +62,25 @@ async function blockall(likers, deselected, actionRow) {
 	actionRow.replace(centerText("Processing..."));
 
 	const createdAt = (new Date()).toISOString();
-	const itemType = 'app.bsky.graph.block';
 
 	likers.filter((_,i) => !deselected[i]).forEach(actor => {
 		if (!actor.viewer.blocking) {
 			records.push({
-				collection: itemType,
+				collection: blockNSID,
 				value: {
-					'$type': itemType,
+					'$type': blockNSID,
 					subject: actor.did,
 					createdAt
 				}
 			});
 		}
+	});
+
+	history.add({
+		collection: blockNSID,
+		timestamp: createdAt,
+		recordCount: records.length,
+		targetUrl
 	});
 
 	actionRow.replace(centerText("Creating blocks..."));
@@ -129,20 +117,25 @@ async function muteall(likers, deselected, actionRow) {
 
 	const list = `at://${repo}/${listType}/${listRkey}`;
 
-	const itemType = 'app.bsky.graph.listitem';
-
 	likers.filter((_,i) => !deselected[i]).forEach(actor => {
 		if (!actor.viewer.muted) {
 			records.push({
-				collection: itemType,
+				collection: listItemNSID,
 				value: {
-					'$type': itemType,
+					'$type': listItemNSID,
 					subject: actor.did,
 					list,
 					createdAt
 				}
 			});
 		}
+	});
+
+	history.add({
+		collection: listItemNSID,
+		timestamp: createdAt,
+		recordCount: records.length,
+		targetUrl
 	});
 
 	actionRow.replace(centerText("Creating mutes..."));
@@ -173,7 +166,7 @@ async function getlikers(rpc, f) {
 
 	if (following === undefined) {
 		following = {};
-		for await (const x of follows()) {
+		for await (const x of listRecords('app.bsky.graph.follow')) {
 	        following[x.value.subject] = true;
 	    }
 	    following[agent.session.did] = true;
@@ -183,7 +176,8 @@ async function getlikers(rpc, f) {
 	let likers = [];
 	let deselected = {};
 
-	const g = postInput.value.value.match(/^https:\/\/bsky\.app\/profile\/(.+?)\/post\/([^/]+)/);
+	targetUrl = postInput.value.value;
+	const g = targetUrl.match(/^https:\/\/bsky\.app\/profile\/(.+?)\/post\/([^/]+)/);
 
 	if (!g || g.length < 3) {
 		main.replace(html`<div class="box">

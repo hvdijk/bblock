@@ -1,18 +1,13 @@
 import { html, render } from 'https://esm.run/lit-html';
 import { ref, createRef } from 'https://esm.run/lit-html/directives/ref.js';
 
-import { Agent } from '@intrnl/bluesky-client/agent';
+import { URL, LIST_NAME, agent } from './common.js';
 
 import { createReplaceable, replaceable } from './replaceable.js';
 
 export { html, render };
 
-export const URL = "https://blockenheimer.click/";
-export const LIST_NAME = "Blockenheimer";
-
 export const centerText = str => html`<center><p>${str}</p></center>`;
-
-export const agent = new Agent({ serviceUri: 'https://bsky.social' });
 
 // theme selection
 const themeLink = document.getElementsByTagName("link")[0];
