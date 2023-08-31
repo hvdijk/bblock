@@ -39,6 +39,11 @@ export async function deleteAll(collection, rkeys) {
 	if (rkeys.length === 0) return;
 
 	const writes = rkeys.map(r => {
+		if (typeof r !== "string") {
+			r['$type'] = 'com.atproto.repo.applyWrites#delete';
+			return r;
+		}
+
 		return {
 			'$type': 'com.atproto.repo.applyWrites#delete',
 			collection,

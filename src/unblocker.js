@@ -2,28 +2,22 @@ import { when } from 'https://esm.run/lit-html/directives/when.js';
 import { asyncAppend } from 'https://esm.run/lit-html/directives/async-append.js';
 import { ref, createRef } from 'https://esm.run/lit-html/directives/ref.js';
 
-import { createReplaceable, replaceable } from './replaceable.js';
-import { agent, rkeyFromUri, listRecords, deleteAll, blockNSID } from './common.js';
+import { replaceable } from './replaceable.js';
+import { createAreYouSure } from './areYouSure.js';
+import { agent, rkeyFromUri, listRecords, deleteAll, blockNSID, listItemNSID } from './common.js';
 import { html, centerText, startApp, logout } from './app.js';
 
-const unblockAllButton = html`<button @click=${() => unblockAllAreYouSure()}>unblock all</button>`;
-const unblockAllRow = createReplaceable(unblockAllButton);
+const unblockAllRow = createAreYouSure("unblock all", unblockAll);
+const deleteListRow = createAreYouSure("delete blockenheimer list", deleteList);
 
 const buttonsBox = html`<div class="box">
 		${replaceable(unblockAllRow)}
+		${replaceable(deleteListRow)}
 		<button @click=${() => unblockSelf()}>unblock yourself</button>
 		<button @click=${() => logout(() => main.replace(loginBox))}>logout</button>
 	</div>`;
 
 var { loginBox, main } = startApp(buttonsBox);
-
-async function unblockAllAreYouSure() {
-	unblockAllRow.replace(html`<div class="row">
-			<span style="flex:1">Are you sure?</span>
-			<button style="flex:1" @click=${() => unblockAllRow.replace(unblockAllButton)}>No</button>
-			<button style="flex:1" @click=${() => unblockAll()}>Yes</button>
-		</div>`);
-}
 
 async function unblockAll() {
 	main.replace(centerText("Getting blocks..."));
@@ -40,7 +34,32 @@ async function unblockAll() {
 
 	await new Promise(r => setTimeout(r, 500));
 
-	unblockAllRow.replace(unblockAllButton)
+	main.replace(buttonsBox);
+}
+
+async function deleteList() {
+	main.replace(centerText("Getting list contents..."));
+
+	const listType = 'app.bsky.graph.list';
+	const listRkey = 'bblock';
+	const list = `at://${agent.session.did}/${listType}/${listRkey}`;
+
+	let rkeys = [];
+	for await (const item of listRecords(listItemNSID)) {
+		if (item.value.list === list) {
+			rkeys.push(rkeyFromUri(item.uri));
+		}
+	}
+
+	main.replace(centerText("Deleting list and contents..."));
+
+	rkeys.push({ collection: listType, rkey: listRkey });
+	deleteAll(listItemNSID, rkeys);
+
+	main.replace(centerText("Done!"));
+
+	await new Promise(r => setTimeout(r, 500));
+
 	main.replace(buttonsBox);
 }
 
