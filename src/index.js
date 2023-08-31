@@ -10,16 +10,25 @@ import { html, centerText, startApp, logout } from './app.js';
 let targetUrl;
 
 const postInput = createRef();
-const postInputBox = html`<div class="box">
+const profileInput = createRef();
+
+const startBox = html`<div class="box">
 		<input ${ref(postInput)} type="text" name="posturl" placeholder="post url">
 		<div class="row">
 			<button @click=${() => getlikers('app.bsky.feed.getRepostedBy', x => x.repostedBy)}>get reposters</button>
 			<button @click=${() => getlikers('app.bsky.feed.getLikes', x => x.likes.map(l => l.actor))}>get likers</button>
 		</div>
+		<hr>
+		<input ${ref(profileInput)} type="text" name="profileurl" placeholder="profile url">
+		<div class="row">
+			<button @click=${() => getlikers('app.bsky.graph.getFollowers', x => x.followers)}>get followers</button>
+			<button @click=${() => getlikers('app.bsky.graph.getFollows', x => x.follows)}>get following</button>
+		</div>
+		<hr>
 		<button @click=${() => logout(() => main.replace(loginBox))}>logout</button>
 	</div>`;
 
-var { loginBox, main } = startApp(postInputBox);
+var { loginBox, main } = startApp(startBox);
 
 async function createAll(records) {
 	if (records.length === 0) return;
@@ -53,7 +62,7 @@ async function recordExists(repo, collection, rkey) {
 
 const doneRow = html`<div class="row">
 		${centerText("Done!")}
-		<button @click=${() => main.replace(postInputBox)}>back</button>
+		<button @click=${() => main.replace(startBox)}>back</button>
 	</div>`;
 
 async function blockall(likers, deselected, actionRow) {
@@ -176,19 +185,21 @@ async function getlikers(rpc, f) {
 	let likers = [];
 	let deselected = {};
 
-	targetUrl = postInput.value.value;
-	const g = targetUrl.match(/^https:\/\/bsky\.app\/profile\/(.+?)\/post\/([^/]+)/);
+	const isGraph = rpc.indexOf("graph") !== -1;
 
-	if (!g || g.length < 3) {
+	targetUrl = (isGraph ? profileInput : postInput).value.value;
+	const g = targetUrl.match(isGraph ? /^(?:https:\/\/bsky\.app\/profile\/|(?=did:plc:))([^/]+)/ : /^https:\/\/bsky\.app\/profile\/([^/]+?)\/post\/([^/]+)/);
+
+	if (!g || g.length < 2) {
 		main.replace(html`<div class="box">
-				${centerText("Invalid Bluesky post URL")}
-				<button @click=${() => main.replace(postInputBox)}>back</button>
+				${centerText("Invalid Bluesky URL")}
+				<button @click=${() => main.replace(startBox)}>back</button>
 			</div>`);
 		return;
 	}
 
 	let did = g[1];
-	if (!g[1].startsWith("did:")) {
+	if (!isGraph && !g[1].startsWith("did:")) {
 		const res = await agent.rpc.get('com.atproto.identity.resolveHandle', {
 			params: {
 				handle: g[1]
@@ -199,13 +210,15 @@ async function getlikers(rpc, f) {
 
 	const PAGE_LIMIT = 100;
 	async function fetchPage(cursor) {
-		return await agent.rpc.get(rpc, {
-			params: {
-				uri: `at://${did}/app.bsky.feed.post/${g[2]}`,
-				limit: PAGE_LIMIT,
-				cursor: cursor,
-			},
-		});
+		const params = { limit: PAGE_LIMIT, cursor: cursor };
+
+		if (isGraph) {
+			params.actor = did;
+		} else {
+			params.uri = `at://${did}/app.bsky.feed.post/${g[2]}`;
+		}
+
+		return await agent.rpc.get(rpc, { params });
 	}
 
 	async function* pages() {
@@ -224,7 +237,7 @@ async function getlikers(rpc, f) {
 		actionRow.replace(html`<div class="row">
 				<button @click=${() => muteall(likers, deselected, actionRow)} style="flex:2">mute all</button>
 				<button @click=${() => blockall(likers, deselected, actionRow)} style="flex:1">block all</button>
-				<button @click=${() => main.replace(postInputBox)} style="flex:1">back</button>
+				<button @click=${() => main.replace(startBox)} style="flex:1">back</button>
 			</div>`);
 	}
 
