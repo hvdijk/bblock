@@ -59,3 +59,5 @@ for (const app of apps) {
 		plugins: [ litHtmlTrimLeadingWhitespace ],
 	}));
 }
+
+await fs.writeFile('dist/donate.html', await htmlJoiner(resolve('src/donate.html')));

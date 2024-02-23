@@ -8,12 +8,14 @@ import { agent, rkeyFromUri, listRecords, deleteAll, blockNSID, listItemNSID } f
 import { html, centerText, startApp, logout } from './app.js';
 
 const unblockAllRow = createAreYouSure("unblock all", unblockAll);
-const deleteListRow = createAreYouSure("delete blockenheimer list", deleteList);
+const deleteListRow = createAreYouSure("delete list", deleteList);
 
 const buttonsBox = html`<div class="box">
 		${replaceable(unblockAllRow)}
-		${replaceable(deleteListRow)}
 		<button @click=${() => unblockSelf()}>unblock yourself</button>
+		<hr/>
+		${replaceable(deleteListRow)}
+		<hr/>
 		<button @click=${() => logout(() => main.replace(loginBox))}>logout</button>
 	</div>`;
 

@@ -1,4 +1,4 @@
-import { Agent } from '@intrnl/bluesky-client/agent';
+import { Agent } from '@externdefs/bluesky-client/agent';
 
 // Constants
 export const URL = "https://blockenheimer.click/";

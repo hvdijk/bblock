@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@intrnl/bluesky-client": "^0.1.3",
+    "@externdefs/bluesky-client": "^0.3.4",
     "esbuild": "0.18.16"
   }
 }
