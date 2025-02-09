@@ -38,7 +38,7 @@ async function createAll(records) {
 		r['$type'] = 'com.atproto.repo.applyWrites#create';
 	});
 
-	const batchSize = 10;
+	const batchSize = 200;
 	const amm = records.length;
 	for (let i = 0; i < amm; i += batchSize) {
 		await agent.rpc.call('com.atproto.repo.applyWrites', {
