@@ -17,7 +17,7 @@ render(html`Theme: <select ${ref(themeSelectRef)} @change=${e => themeChange(e.t
 		<option value="barbie">Barbie</option>
 		<option value="dark">Dark</option>
 		<option value="dred">Dark red</option>
-	</select><br><a href="https://codeberg.org/xormetric/bblock/">Source code</a>`, document.getElementById("themeselectbox"))
+	</select><br><a href="https://github.com/hvdijk/bblock/">Source code</a>`, document.getElementById("themeselectbox"))
 
 function themeChange(theme) {
 	themeLink.attributes["href"].value = "themes/"+theme+".css";
@@ -89,12 +89,7 @@ async function login(id, pass, goNotAppPassword, goError, goApp) {
 		password: pass,
 	});
 
-	const user = await sha(agent.session.did);
-	if ((await fetch(URL+"d/"+user)).ok) {
-		goError();
-	} else {
-		goApp();
-	}
+	goApp();
 
 	localStorage.setItem("handle", id);
 	localStorage.setItem("password", pass);

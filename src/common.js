@@ -1,7 +1,7 @@
 import { Agent } from '@externdefs/bluesky-client/agent';
 
 // Constants
-export const URL = "https://blockenheimer.click/";
+export const URL = "https://hvdijk.github.io/bblock/";
 export const LIST_NAME = "Blockenheimer";
 
 export const blockNSID = 'app.bsky.graph.block';

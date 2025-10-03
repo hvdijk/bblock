@@ -1,0 +1,38 @@
+name: Build and deploy
+on:
+  push:
+    branches: [main]
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Check out sources
+      uses: actions/checkout@v4
+      with:
+        path: build
+    - name: Set up NodeJS
+      uses: actions/setup-node@v5
+    - name: Build package
+      run: |
+        cd build
+        npm install
+        node build.mjs
+    - name: Upload package
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: build/dist
+  deploy:
+    name: Deploy
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-24.04
+    needs:
+    - build
+    permissions:
+      id-token: write
+      pages: write
+    steps:
+    - name: Deploy to GitHub Pages
+      uses: actions/deploy-pages@v4
