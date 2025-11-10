@@ -233,7 +233,7 @@ async function getlikers(rpc, f) {
 
 		yield* page;
 
-		while (res.data.cursor && page.length >= PAGE_LIMIT) {
+		while (res.data.cursor) {
 			res = await fetchPage(res.data.cursor);
 			page = f(res.data);
 
