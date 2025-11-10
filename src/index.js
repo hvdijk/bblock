@@ -102,7 +102,7 @@ async function blockall(likers, deselected, actionRow) {
 }
 
 const listRkey = 'bblock';
-function listCreateRecord() {
+function listCreateRecord(repo) {
 	const createdAt = (new Date()).toISOString();
 
 	return [ `at://${repo}/app.bsky.graph.list/${listRkey}`, {
@@ -129,7 +129,7 @@ async function muteall(likers, list, deselected, actionRow) {
 	let listExists = true;
 	if (list == "create") {
 		listExists = await recordExists(repo, 'app.bsky.graph.list', listRkey);
-		const [ _list, listRecord ] = listCreateRecord();
+		const [ _list, listRecord ] = listCreateRecord(repo);
 		if (!listExists)
 			records.push(listRecord);
 		list = _list;
