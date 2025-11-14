@@ -37,6 +37,7 @@ export function startApp(appBox) {
 
 	const loginHandle = createRef();
 	const loginPassword = createRef();
+	const loginPds = createRef();
 
 	const appPasswordExplanationBox = html`<div class="box" style="width:20rem">
 			<p>You may only use App Passwords to login into ${LIST_NAME}. Use the
@@ -54,7 +55,8 @@ export function startApp(appBox) {
 				<input ${ref(loginPassword)} type="password" name="password" placeholder="app password" style="flex:1">
 				<button @click=${() => main.replace(appPasswordExplanationBox)} class="squarebutton">?</a>
 			</div>
-			<button @click=${() => login(loginHandle.value.value, loginPassword.value.value, goNotAppPassword, goError, goApp)}>login</button>
+			<input ${ref(loginPds)} type="text" name="pds" placeholder="pds" value="https://bsky.social/">
+			<button @click=${() => login(loginHandle.value.value, loginPassword.value.value, loginPds.value.value, goNotAppPassword, goError, goApp)}>login</button>
 		</div>`;
 
 	render(html`${replaceable(main)}`, document.getElementById("maincontainer"));
@@ -62,7 +64,7 @@ export function startApp(appBox) {
 	main.replace(loginBox);
 
 	if (localStorage.getItem("password")) {
-		login(localStorage.getItem("handle"), localStorage.getItem("password"), goNotAppPassword, goError, goApp);
+		login(localStorage.getItem("handle"), localStorage.getItem("password"), localStorage.getItem("pds"), goNotAppPassword, goError, goApp);
 	}
 
 	return {
@@ -78,12 +80,13 @@ async function logout(go) {
 	go();
 }
 
-async function login(id, pass, goNotAppPassword, goError, goApp) {
+async function login(id, pass, pds, goNotAppPassword, goError, goApp) {
 	if (!pass.match(/^[a-zA-Z\d]{4}(-[a-zA-Z\d]{4}){3}$/)) {
 		goNotAppPassword();
 		return;
 	}
 
+	agent.serviceUri = pds;
 	await agent.login({
 		identifier: id.replace(/^@/, ""),
 		password: pass,
@@ -93,6 +96,7 @@ async function login(id, pass, goNotAppPassword, goError, goApp) {
 
 	localStorage.setItem("handle", id);
 	localStorage.setItem("password", pass);
+	localStorage.setItem("pds", pds);
 }
 
 async function sha(s) {
